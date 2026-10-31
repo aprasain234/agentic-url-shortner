@@ -1,3 +1,18 @@
+#spring:
+#  application:
+#    name: agentic-url-shortner
+
 spring:
-  application:
-    name: agentic-url-shortner
+  datasource:
+    url: jdbc:h2:mem:urldb
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
