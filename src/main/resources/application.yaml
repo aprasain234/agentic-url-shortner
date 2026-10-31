@@ -1,8 +1,6 @@
-#spring:
-#  application:
-#    name: agentic-url-shortner
-
 spring:
+  application:
+    name: agentic-url-shortner
   datasource:
     url: jdbc:h2:mem:urldb
     driverClassName: org.h2.Driver
