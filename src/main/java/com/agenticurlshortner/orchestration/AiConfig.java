@@ -1,22 +1,33 @@
 package com.agenticurlshortner.orchestration;
 
 import dev.langchain4j.model.chat.ChatLanguageModel;
-import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
+import dev.langchain4j.model.openai.OpenAiChatModel;
+import dev.langchain4j.service.AiServices;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.time.Duration;
 
 @Configuration
 public class AiConfig {
 
     @Bean
     public ChatLanguageModel chatLanguageModel(
-            @Value("${GEMINI_API_KEY}") String apiKey) {
+            @Value("${OPENAI_API_KEY}") String apiKey) {
 
-        return GoogleAiGeminiChatModel.builder()
+        return OpenAiChatModel.builder()
                 .apiKey(apiKey)
-                .modelName("gemini-1.5-pro")
+                .modelName("gpt-4o-mini")
                 .temperature(0.0)
+                .timeout(Duration.ofSeconds(60))
+                .build();
+    }
+
+    @Bean
+    public RequirementsAgent requirementsAgent(ChatLanguageModel chatLanguageModel) {
+        return AiServices.builder(RequirementsAgent.class)
+                .chatLanguageModel(chatLanguageModel)
                 .build();
     }
 }
