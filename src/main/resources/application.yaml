@@ -14,3 +14,13 @@ spring:
     console:
       enabled: true
       path: /h2-console
+
+# aspects
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, info
+  endpoint:
+    health:
+      show-details: always
