@@ -8,10 +8,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class WorkflowOrchestrator {
     private final ExecutionContextRepository repository;
     private final RequirementsAgent requirementsAgent;
+    private final CoderAgent coderAgent;
 
-    public WorkflowOrchestrator(ExecutionContextRepository repository, RequirementsAgent requirementsAgent) {
+    public WorkflowOrchestrator(ExecutionContextRepository repository,
+                                RequirementsAgent requirementsAgent,
+                                CoderAgent coderAgent) {
         this.repository = repository;
         this.requirementsAgent = requirementsAgent;
+        this.coderAgent = coderAgent;
     }
 
     @Transactional
@@ -56,6 +60,32 @@ public class WorkflowOrchestrator {
         // 3. Update State and enforce Human-In-The-Loop gate
         context.setAgentMemory(analysis);
         context.setCurrentState(WorkflowState.PENDING_HUMAN_APPROVAL);
+
+        return repository.save(context);
+    }
+
+    @Transactional
+    public ExecutionContext approveWorkflow(Long id) {
+        ExecutionContext context = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Workflow not found"));
+
+        if (context.getCurrentState() != WorkflowState.PENDING_HUMAN_APPROVAL) {
+            throw new IllegalStateException("Workflow is not waiting for approval.");
+        }
+
+        // 1. Advance state
+        context.setCurrentState(WorkflowState.IMPLEMENTATION);
+        repository.save(context);
+
+        // 2. Execute Coder Agent
+        String generatedCode = coderAgent.generateCode(
+                context.getOriginalRequirement(),
+                context.getAgentMemory()
+        );
+
+        // 3. Append code to memory and advance to final state
+        context.setAgentMemory(context.getAgentMemory() + "\n\n### Generated Implementation:\n" + generatedCode);
+        context.setCurrentState(WorkflowState.RELEASE_READY);
 
         return repository.save(context);
     }

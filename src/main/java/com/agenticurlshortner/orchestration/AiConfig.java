@@ -30,4 +30,11 @@ public class AiConfig {
                 .chatLanguageModel(chatLanguageModel)
                 .build();
     }
+
+    @Bean
+    public CoderAgent coderAgent(ChatLanguageModel chatLanguageModel) {
+        return AiServices.builder(CoderAgent.class)
+                .chatLanguageModel(chatLanguageModel)
+                .build();
+    }
 }

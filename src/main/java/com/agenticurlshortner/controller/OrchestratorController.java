@@ -27,4 +27,9 @@ public class OrchestratorController {
         ExecutionContext context = orchestrator.startNewWorkflow(requirement);
         return ResponseEntity.ok(context);
     }
+
+    @PostMapping("/run/{id}/approve")
+    public ResponseEntity<ExecutionContext> approveWorkflow(@PathVariable Long id) {
+        return ResponseEntity.ok(orchestrator.approveWorkflow(id));
+    }
 }
