@@ -85,6 +85,32 @@ public class WorkflowOrchestrator {
         return repository.save(context);
     }
 
+    @Transactional
+    public ExecutionContext provideFeedback(Long id, String feedback) {
+        ExecutionContext context = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Workflow not found"));
+
+        if (context.getCurrentState() != WorkflowState.PENDING_HUMAN_APPROVAL) {
+            throw new IllegalStateException("Workflow is not waiting for approval.");
+        }
+
+        context.setAgentMemory(context.getAgentMemory() + "\n\n[HUMAN FEEDBACK]: " + feedback);
+        context.setCurrentState(WorkflowState.REQUIREMENT_ANALYSIS);
+
+        try {
+            String updatedAnalysis = requirementsAgent.analyzeRequirement(
+                    context.getOriginalRequirement() + "\nIncorporate this feedback: " + feedback
+            );
+            context.setAgentMemory(context.getAgentMemory() + "\n\n[RE-ANALYSIS]:\n" + updatedAnalysis);
+            context.setCurrentState(WorkflowState.PENDING_HUMAN_APPROVAL);
+        } catch (Exception e) {
+            context.setCurrentState(WorkflowState.FAILED);
+            context.setAgentMemory("Failed during re-planning: " + e.getMessage());
+        }
+
+        return repository.save(context);
+    }
+
     void setRetryDelayMs(long retryDelayMs) {
         this.retryDelayMs = retryDelayMs;
     }
