@@ -23,7 +23,8 @@ The application requires an OpenAI API key exposed as an environment variable to
    `mvn spring-boot:run`
    The service will start on `http://localhost:8080`.
 
-## Core API Endpoints (Baseline URL Shortener)
+## Core API Endpoints & Interactive Documentation
+- **Swagger UI (Live Contract Testing)**: Access `http://localhost:8080/swagger-ui.html` in your browser to test all endpoints interactively.
 - **POST** `/api/url/shorten`: Accepts a JSON payload `{"originalUrl": "https://..."}` and returns a short key.
 - **GET** `/api/url/{shortKey}`: Redirects to the original URL and records analytics (IP, User-Agent).
 - **GET** `/api/url/{shortKey}/stats`: Returns aggregate click analytics.
@@ -56,6 +57,11 @@ Once a workflow reaches `PENDING_HUMAN_APPROVAL`, human review is enforced. You 
   **POST** `http://localhost:8080/api/orchestrator/run/{id}/feedback`
   **Body**: `{"feedback": "Use Redis for caching instead of in-memory."}`
   Rejects the current analysis, dynamically re-plans the task incorporating the feedback, and pushes the state back to `REQUIREMENT_ANALYSIS`.
+
+## Testing & Quality Assurance
+The codebase includes both Mockito unit tests and end-to-end integration tests (`UrlShortenerIntegrationTest`) that spin up the full Spring context, execute REST calls via `MockMvc`, simulate HTTP redirects, and verify that analytics telemetry is physically persisted to the H2 database.
+- **Run Tests via Terminal**: `mvn clean test`
+- **Test Reports**: Located in `target/surefire-reports/`
 
 ## Database & Observability
 
